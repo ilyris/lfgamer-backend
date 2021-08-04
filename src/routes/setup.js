@@ -47,7 +47,6 @@ const getLeagueAccountInfo = async (alias) => {
     }
 }
 const getLeagueAccountLeagueInfo = async summonerId => {
-    console.log(summonerId)
     try {
         const res = await axios.get(`https://na1.api.riotgames.com/lol/league/v4/entries/by-summoner/${summonerId}?api_key=${RGAPI}`);
         console.log(res.data)
