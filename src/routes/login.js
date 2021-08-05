@@ -1,6 +1,6 @@
 const { Router } = require("express");
 const router = Router();
-const { addUser, findUsersBy, findProfileInformation } = require("../models/users");
+const { addUser, findUsersBy, findProfileInformation, getRiotId } = require("../models/users");
 const { generateToken } = require("../herlper_funcs/generateToken");
 const { compareSync, hashSync } = require("bcryptjs");
 const CLIENT_ID = process.env.CLIENT_ID;
@@ -23,7 +23,11 @@ const getUser = (data, api_res) => {
     })
     .then(async (response) => {
       userData = response.data;
+
+      // Grab the user by their email
       let user = await findUsersBy({ email: userData.email }).first();
+
+      // stringify discordData to hash it to use it as a comparison string
       let discordString = JSON.stringify({
         email: userData.email,
         username: userData.username,
@@ -32,8 +36,8 @@ const getUser = (data, api_res) => {
       });
 
       const hash = hashSync(discordString, 10);
-      console.log(hash)
 
+      // if no user exists, create the object.
         if (!user) {
           await addUser({
             discord_id: userData.id,
@@ -45,13 +49,19 @@ const getUser = (data, api_res) => {
           });
           // maybe just pull the user in the /user route.
           let user = await findUsersBy({ email: userData.email }).first();
+          let riotId = await getRiotId({user_id: user.id}).first();
+
+          console.log(riotId)
           userData.user_id = user.id;
+          userData.riot_id = riotId;
+
         } else {
           // compare the sync
           const result = compareSync(discordString, user.hash);
 
           if (result) {
             userData.user_id = user.id;
+            userData.riot_id = user.riot_id
           } else {
             addUser({
               email: userData.email,
@@ -61,6 +71,8 @@ const getUser = (data, api_res) => {
               hash,
             });
             userData.user_id = user.id;
+            userData.riot_id = user.riot_id
+
           }
         }
 

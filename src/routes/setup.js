@@ -66,6 +66,7 @@ const getLeagueAccountLeagueInfo = async summonerId => {
 }
 const getLeagueChampionMastery = async (summonerId,championData) => {
     try {
+        console.log(summonerId + 'pog');
         const res = await axios.get(`https://na1.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-summoner/${summonerId}?api_key=${RGAPI}`);
 
         // loop through the users champions, grab the first 3.
@@ -196,27 +197,36 @@ router.post("/getLeagueInfo", async (req, res) => {
     const {user_id} = req.body;
     try {
         const userLeagueInfo = await db("Profile_League_Account_Info").select('user_id','summonerId', 'accountId').where({user_id: user_id}).first();
+        if(userLeagueInfo) {
+            const championDataResponse = await axios.get(`https://ddragon.leagueoflegends.com/cdn/11.15.1/data/en_US/champion.json`)
+            // Get summoner league information
+            const leagueInfo = await getLeagueAccountLeagueInfo(userLeagueInfo.summonerId);
+    
+            // summoner champion masteries
+            const championPool = await getLeagueChampionMastery(userLeagueInfo.summonerId, championDataResponse.data.data);
+            // Get summoner match list
+            const matches = await getMatchList(userLeagueInfo.accountId)
+    
+            const matchesWithStatus = await getMatchStatus(matches,userLeagueInfo.summonerId, championDataResponse.data.data);
+    
+            const leagueData = {
+                leagueInfo,
+                championPool,
+                recentMatches: matchesWithStatus,
+            }
+            res.status(200).json(leagueData);
+    
+            console.log(leagueData);
+        } else {
+            const leagueData = {
+                leagueInfo: undefined,
+                championPool: [],
+                recentMatches: [],
+            }
+            res.status(200).json(leagueData);
 
-        const championDataResponse = await axios.get(`https://ddragon.leagueoflegends.com/cdn/11.15.1/data/en_US/champion.json`)
-        // Get summoner league information
-        const leagueInfo = await getLeagueAccountLeagueInfo(userLeagueInfo.summonerId);
-
-        // summoner champion masteries
-        const championPool = await getLeagueChampionMastery(userLeagueInfo.summonerId, championDataResponse.data.data);
-        // Get summoner match list
-        const matches = await getMatchList(userLeagueInfo.accountId)
-
-        const matchesWithStatus = await getMatchStatus(matches,userLeagueInfo.summonerId, championDataResponse.data.data);
-
-        const leagueData = {
-            leagueInfo,
-            championPool,
-            recentMatches: matchesWithStatus,
         }
-        res.status(200).json(leagueData);
-
-        console.log(leagueData);
-
+        
     }
     catch(err) {
         console.log(err);

@@ -14,6 +14,7 @@ const addUserProfile = async (newUserProfile) => {
   return db("profile_information").insert(newUserProfile);
 };
 const findUsersBy = (filter) => db("User").where(filter);
+const getRiotId = (filter) => db("Profile").select('riot_id').where(filter);
 
 const getAllDuoListing = (filter) => {
   return db("DuoListing")
@@ -62,6 +63,7 @@ module.exports = {
   addUser,
   addUserProfile,
   findUsersBy,
+  getRiotId,
   findProfileInformation,
   findSearchedUsers,
   getAllDuoListing,
