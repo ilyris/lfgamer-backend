@@ -28,9 +28,49 @@ const getAllDuoListing = (filter) => {
       "DuoListing.rank",
       "DuoListing.champions",
       "DuoListing.roles",
-      "DuoListing.post_description"
+      "DuoListing.post_description",
+      "DuoListing.created_at"
     );
 };
+const getFilteredDuoListings = (searchObj) => {
+
+  const objValues = Object.values(searchObj);
+  const objKeys = Object.keys(searchObj)
+
+    return db("DuoListing")
+    .join("User", "User.id", "DuoListing.user_id")
+    .select(
+      "User.id",
+      "User.username",
+      "User.avatar",
+      "User.discord_id",
+      "User.discriminator",
+      "DuoListing.rank",
+      "DuoListing.champions",
+      "DuoListing.roles",
+      "DuoListing.post_description",
+      "DuoListing.created_at"
+    )
+    .where(function() {
+      objValues.forEach( (value,i) => {
+        if(objKeys[i] == 'mic')  {
+          console.log(value)
+          return this.where(`mic`, value)
+        }
+        if(objKeys[i] == 'rank' && typeof value[0] !== 'undefined')  {
+          console.log(value[0])
+          return this.where(`rank`, value[0])
+        }
+        if(value.length !== 0 ) {
+          console.log(value)
+         return this.where(`${objKeys[i]}`, '@>', value)
+        }
+      })
+   })
+}
+
+
+
 
 const addDuoPost = (newPost) => {
   return db("DuoListing").insert(newPost);
@@ -67,5 +107,6 @@ module.exports = {
   findProfileInformation,
   findSearchedUsers,
   getAllDuoListing,
+  getFilteredDuoListings,
   addDuoPost
 };

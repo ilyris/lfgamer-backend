@@ -1,23 +1,22 @@
 const { Router } = require("express");
 const router = Router();
-const { findUsersBy, getAllDuoListing, addDuoPost} = require("../models/users");
+const { findUsersBy, getAllDuoListing,getFilteredDuoListings, addDuoPost} = require("../models/users");
 
 router.post('/search', async function(req, res) {
-    // query all the user duo submissions, based on the filtered results.
-    // get user data for their name (to see their username and to connect with them)
-    console.log({userid: req.body.user_id})
-    const user = await findUsersBy({id: req.body.user_id}).first();
+    const duoListings = await getFilteredDuoListings(
+        {
+            champions:req.body.champions,
+            rank: req.body.rank,
+            roles: req.body.lanes,
+            mic: req.body.mic
+        }
+        );
 
-    // get profile data to get their champion selections
-    console.log({user: user});
-    const profileData = await getAllDuoListing({user_id: req.body.user_id});
-
-    console.log(profileData);
 
     const duoSubmissionData = {
-        profile: profileData,
-        user: user,
+        listing: duoListings,
     }
+    console.log(duoSubmissionData)
     res.json(duoSubmissionData);
 });
 
