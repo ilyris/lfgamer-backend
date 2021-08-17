@@ -52,19 +52,21 @@ const getFilteredDuoListings = (searchObj) => {
       "DuoListing.created_at"
     )
     .where(function() {
+      console.log(searchObj)
       objValues.forEach( (value,i) => {
         if(objKeys[i] == 'mic')  {
           console.log(value)
-          return this.where(`mic`, value)
+          this.andWhere(`mic`, value)
         }
-        if(objKeys[i] == 'rank' && typeof value[0] !== 'undefined')  {
-          console.log(value[0])
-          return this.where(`rank`, value[0])
-        }
-        if(value.length !== 0 ) {
+        if(objKeys[i] == 'rank' && typeof value !== 'undefined')  {
           console.log(value)
-         return this.where(`${objKeys[i]}`, '@>', value)
+          this.andWhere(`rank`, value)
         }
+        if((typeof value !== 'undefined' && value.length !== 0)  && objKeys[i] != 'mic' && typeof value !== "string" ) {
+          console.log(value)
+          this.andWhere(`${objKeys[i]}`, '@>', value)
+        }
+
       })
    })
 }

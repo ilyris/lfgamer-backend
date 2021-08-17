@@ -49,15 +49,15 @@ const getUser = (data, api_res) => {
           });
           // maybe just pull the user in the /user route.
           let user = await findUsersBy({ email: userData.email }).first();
+          let riotId = await getRiotId({user_id: user.id}).first();
 
+          console.log(riotId)
           userData.user_id = user.id;
+          userData.riot_id = riotId;
 
         } else {
           // compare the sync
           const result = compareSync(discordString, user.hash);
-          let riotId = await getRiotId({user_id: user.id}).first();
-          userData.riot_id = riotId;
-          console.log(riotId)
 
           if (result) {
             userData.user_id = user.id;
